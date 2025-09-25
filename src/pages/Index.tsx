@@ -1,47 +1,27 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import LandingPage from "./LandingPage";
-import LoginForm from "@/components/LoginForm";
-import SignupForm from "@/components/SignupForm";
-import PasswordResetForm from "@/components/PasswordResetForm";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<"landing" | "login" | "signup" | "reset">("landing");
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-  const renderCurrentView = () => {
-    switch (currentView) {
-      case "login":
-        return (
-          <LoginForm
-            onForgotPassword={() => setCurrentView("reset")}
-            onSignUp={() => setCurrentView("signup")}
-            onClose={() => setCurrentView("landing")}
-          />
-        );
-      case "signup":
-        return (
-          <SignupForm
-            onLogin={() => setCurrentView("login")}
-            onClose={() => setCurrentView("landing")}
-          />
-        );
-      case "reset":
-        return (
-          <PasswordResetForm
-            onBack={() => setCurrentView("login")}
-            onClose={() => setCurrentView("landing")}
-          />
-        );
-      default:
-        return <LandingPage />;
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard');
     }
-  };
+  }, [user, loading, navigate]);
 
-  return (
-    <>
-      <LandingPage />
-      {currentView !== "landing" && renderCurrentView()}
-    </>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return <LandingPage />;
 };
 
 export default Index;
