@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Users, BookOpen, ChevronRight } from "lucide-react";
@@ -28,7 +29,7 @@ const kikuyuProverbs = [
 
 const LandingPage = () => {
   const [currentProverb, setCurrentProverb] = useState(0);
-  const [showLogin, setShowLogin] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -47,10 +48,17 @@ const LandingPage = () => {
             <span className="text-2xl font-bold text-foreground">Murata</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => setShowLogin(true)}>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/auth?tab=login')}
+            >
               Sign In
             </Button>
-            <Button variant="default" className="bg-gradient-primary shadow-warm">
+            <Button
+              variant="default"
+              className="bg-gradient-primary shadow-warm"
+              onClick={() => navigate('/auth?tab=signup')}
+            >
               Get Started
             </Button>
           </div>
