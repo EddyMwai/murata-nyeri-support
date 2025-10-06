@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { signIn } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +32,10 @@ export const LoginForm = () => {
     try {
       const validatedData = loginSchema.parse(formData);
       const { error } = await signIn(validatedData.email, validatedData.password);
-      
       if (error) {
         setErrors({ submit: error.message });
+      } else {
+        navigate("/landing", { replace: true });
       }
     } catch (err) {
       if (err instanceof z.ZodError) {

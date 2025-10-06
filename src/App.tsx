@@ -6,8 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+
 import { AuthPage } from "./pages/AuthPage";
 import { Dashboard } from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
+import ProverbQuiz from "./components/ProverbQuiz";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +32,22 @@ const App = () => (
                   <Dashboard />
                 </ProtectedRoute>
               } 
+            />
+            <Route 
+              path="/landing" 
+              element={
+                <ProtectedRoute>
+                  <LandingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/proverb-quiz" 
+              element={
+                <ProtectedRoute>
+                  <ProverbQuiz />
+                </ProtectedRoute>
+              }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

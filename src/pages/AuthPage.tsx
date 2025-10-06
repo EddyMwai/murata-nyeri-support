@@ -11,9 +11,9 @@ export const AuthPage = () => {
   const [activeTab, setActiveTab] = useState('login');
   const { user, loading } = useAuth();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to landing page
   if (!loading && user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   if (loading) {
