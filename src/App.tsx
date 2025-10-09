@@ -12,6 +12,7 @@ import { Dashboard } from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 import ProverbQuiz from "./components/ProverbQuiz";
 import NotFound from "./pages/NotFound";
+import ChatPage from "./pages/ChatPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProverbQuiz />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
                 </ProtectedRoute>
               }
             />
