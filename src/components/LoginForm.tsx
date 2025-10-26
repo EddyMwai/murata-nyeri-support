@@ -35,7 +35,7 @@ export const LoginForm = () => {
       if (error) {
         setErrors({ submit: error.message });
       } else {
-        navigate("/landing", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch (err) {
       if (err instanceof z.ZodError) {

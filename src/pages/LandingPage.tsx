@@ -1,89 +1,35 @@
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import Header from "@/components/Header";
-import BackButton from "@/components/BackButton";
-import StreakTracker from "@/components/StreakTracker";
-import ProverbCard from "@/components/ProverbCard";
-import MoodSelector from "@/components/MoodSelector";
-
-const mockProverbs = [
-  { proverb: "Mûno ndûgîrîrwo ndûgîrîrwo na mûtî", meaning: "A person is supported by others, just as a tree is supported by the forest." },
-  { proverb: "Gûtirî mûtî ûtarî mûthî", meaning: "There is no tree without roots (Everyone has an origin)." },
-  { proverb: "Mûndû mûgîkûyû ndarîa na mûno", meaning: "A Kikuyu person does not eat alone (Community is important)." },
-  { proverb: "Wîhîrîrîa ndîrîa", meaning: "He who perseveres eats (Patience pays off)." },
-];
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [streak, setStreak] = useState(0);
-  const [proverbIdx, setProverbIdx] = useState(0);
-  const [mood, setMood] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    // Fetch streak from Supabase
-    supabase.from("streaks").select("count").eq("user_id", user.id).single().then(({ data }) => {
-      setStreak(data?.count || 0);
-      setLoading(false);
-    });
-  }, [user]);
-
-  const handleCheckin = async (drank: boolean, mood: string) => {
-    if (!user) return;
-    await supabase.from("checkins").insert({ user_id: user.id, drank, mood, date: new Date().toISOString() });
-    if (!drank) setStreak((s) => s + 1);
-    else setStreak(0);
-    // Optionally update streak in Supabase
-    await supabase.from("streaks").upsert({ user_id: user.id, count: !drank ? streak + 1 : 0 });
-  };
-
-  const handleMood = async (emoji: string) => {
-    setMood(emoji);
-    if (user) {
-      await supabase.from("moods").insert({ user_id: user.id, mood: emoji, date: new Date().toISOString() });
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 flex flex-col">
-      <Header title="Murata">
-        <button className="murata-back" onClick={() => navigate("/profile")}>Profile</button>
-      </Header>
-      <main className="flex-1 flex flex-col items-center px-2 w-full max-w-screen-xl mx-auto py-4">
-        <StreakTracker streak={streak} />
-        {/* Daily Check-in */}
-        <div className="murata-card w-full max-w-md mx-auto mb-6">
-          <h3 className="text-lg font-semibold mb-2 text-primary">Daily Check-in</h3>
-          <div className="mb-2">Did you drink today?</div>
-          <div className="flex gap-4 mb-2">
-            <button className="murata-back" onClick={() => handleCheckin(true, mood)}>Yes</button>
-            <button className="murata-back" onClick={() => handleCheckin(false, mood)}>No</button>
-          </div>
-          <div className="mb-2">How are you feeling today?</div>
-          <MoodSelector selected={mood} onSelect={handleMood} />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-purple-50 px-4">
+      <div className="w-full max-w-xl mx-auto text-center py-16 flex flex-col items-center justify-center">
+        <div className="mb-8">
+          <h1 className="text-5xl font-extrabold text-primary mb-4 tracking-tight">Murata Nyeri Support</h1>
+          <p className="text-xl text-muted-foreground mb-4 font-medium">Empowering you to take charge of your wellness journey</p>
+          <p className="text-base text-gray-700 mb-8">
+            Murata Nyeri Support is a wellness and mental health support platform designed to help users track progress, engage in daily check-ins, and connect for guided assistance.
+          </p>
         </div>
-        {/* Motivational Proverb */}
-        <ProverbCard proverb={mockProverbs[proverbIdx]} onNext={() => setProverbIdx((i) => (i + 1) % mockProverbs.length)} />
-        {/* Mini Game Card */}
-        <div className="murata-card w-full max-w-md mx-auto flex flex-col items-center mb-6">
-          <h3 className="text-lg font-semibold mb-2 text-primary">Proverb Quiz</h3>
-          <div className="text-gray-700 mb-2 text-center">Test your knowledge of Kikuyu proverbs! Guess the meaning and earn a streak.</div>
-          <button className="murata-back w-full mt-2" onClick={() => navigate("/game")}>Play Now</button>
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+          <button
+            className="murata-back w-full sm:w-auto px-8 py-3 text-lg font-semibold rounded-lg bg-gradient-to-r from-purple-500 to-purple-700 text-white shadow hover:from-purple-600 hover:to-purple-800 transition"
+            onClick={() => navigate('/login')}
+          >
+            Sign In
+          </button>
+          <button
+            className="murata-back w-full sm:w-auto px-8 py-3 text-lg font-semibold rounded-lg bg-gradient-to-r from-purple-400 to-purple-600 text-white shadow hover:from-purple-500 hover:to-purple-700 transition"
+            onClick={() => navigate('/signup')}
+          >
+            Sign Up
+          </button>
         </div>
-        {/* Start Chat */}
-        <button className="murata-back w-full max-w-md mt-2 mb-4 text-lg py-3" onClick={() => navigate("/chat")}>Start Chat</button>
-      </main>
-      <footer className="w-full flex justify-center items-center py-4 bg-white/80 shadow-inner mt-4">
-        <nav className="flex gap-8 text-primary font-medium">
-          <button onClick={() => navigate("/checkins")} className="hover:text-purple-900">Check-in History</button>
-          <button onClick={() => navigate("/support")} className="hover:text-purple-900">Support</button>
-          <button onClick={() => navigate("/profile")} className="hover:text-purple-900">Profile</button>
-        </nav>
+      </div>
+      <footer className="w-full text-center py-6 text-muted-foreground text-base font-medium">
+        Empowering you to take charge of your wellness journey – Murata Nyeri Support
       </footer>
     </div>
   );
