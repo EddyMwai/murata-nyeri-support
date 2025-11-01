@@ -9,7 +9,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
-import ChatPage from "./pages/ChatPage";
+import ProverbQuiz from "./pages/ProverbQuiz";
+import AdminDashboard from "./pages/AdminDashboard";
+import MurataChatbot from "./pages/MurataChatbot";
+import CheckinHistory from "./pages/CheckinHistory";
+import SupportPage from "./pages/SupportPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 // Stub AnalyticsPage for /analytics route
@@ -32,12 +37,18 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<AuthPage activeTab="login" />} />
             <Route path="/login" element={<AuthPage activeTab="login" />} />
             <Route path="/signup" element={<AuthPage activeTab="signup" />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+            <Route path="/game" element={<ProtectedRoute><ProverbQuiz /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><MurataChatbot /></ProtectedRoute>} />
+            <Route path="/checkins" element={<ProtectedRoute><CheckinHistory /></ProtectedRoute>} />
+            <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound redirectTo="/" message="Page not found. Redirecting to home..." />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

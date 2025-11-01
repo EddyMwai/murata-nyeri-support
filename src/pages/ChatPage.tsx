@@ -15,17 +15,24 @@ const ChatPage: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
     supabase
-      .from("messages")
-      .select("*")
+      .from("chat_sessions")
+      .select("sender, text, timestamp")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        setMessages(data || []);
+      .order("timestamp", { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          setMessages([]);
+        } else {
+          setMessages(data || []);
+        }
         setLoading(false);
       });
-  }, [user]);
+  }, [user, navigate]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,22 +44,26 @@ const ChatPage: React.FC = () => {
     const newMsg = {
       user_id: user.id,
       sender: "user",
-      message: input,
-      created_at: new Date().toISOString(),
+      text: input,
+      timestamp: new Date().toISOString(),
     };
-    const { data: inserted } = await supabase.from("messages").insert(newMsg).select().single();
-    setMessages((msgs) => [...msgs, inserted]);
+    const { error: userError } = await supabase.from("chat_sessions").insert(newMsg);
+    if (userError) {
+      setInput("");
+      return;
+    }
+    setMessages((msgs) => [...msgs, newMsg]);
     setInput("");
     // Simulate AI reply
     setTimeout(async () => {
       const aiMsg = {
         user_id: user.id,
         sender: "ai",
-        message: `Echo: ${inserted.message}`,
-        created_at: new Date().toISOString(),
+        text: `Echo: ${newMsg.text}`,
+        timestamp: new Date().toISOString(),
       };
-      const { data: aiInserted } = await supabase.from("messages").insert(aiMsg).select().single();
-      setMessages((msgs) => [...msgs, aiInserted]);
+      await supabase.from("chat_sessions").insert(aiMsg);
+      setMessages((msgs) => [...msgs, aiMsg]);
     }, 900);
   };
 
@@ -98,7 +109,7 @@ const ChatPage: React.FC = () => {
                           : "bg-white border border-primary text-primary self-start"}
                       `}
                     >
-                      {msg.message}
+                      {msg.text}
                     </div>
                     <span className="text-xs text-gray-400 mt-1 px-1">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

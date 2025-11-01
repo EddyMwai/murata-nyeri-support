@@ -75,7 +75,7 @@ const Dashboard: React.FC = () => {
           <div className="murata-card rounded-xl shadow bg-white/90 p-6 flex flex-col items-center">
             <h3 className="text-xl font-semibold mb-2 text-primary">Proverb Quiz</h3>
             <div className="text-gray-700 mb-2 text-center">Test your knowledge of Kikuyu proverbs! Guess the meaning and earn a streak.</div>
-            <button className="murata-back w-full mt-2 text-lg py-3" onClick={() => navigate("/game")}>Play Now</button>
+            <button className="murata-back w-full mt-2 text-lg py-3 transition transform hover:scale-105 hover:bg-purple-600 hover:text-white shadow-md" onClick={() => navigate("/game")}>Play Now</button>
           </div>
 
           {/* Chat Card */}
