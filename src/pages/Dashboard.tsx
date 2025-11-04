@@ -1,163 +1,100 @@
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
-export const Dashboard = () => {
-  const { user, profile, signOut } = useAuth();
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import Header from "@/components/Header";
+import StreakTracker from "@/components/StreakTracker";
+import ProverbCard from "@/components/ProverbCard";
+import MoodSelector from "@/components/MoodSelector";
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'admin': return 'destructive';
-      case 'counselor': return 'secondary';
-      default: return 'default';
-    }
+const mockProverbs = [
+  { proverb: "Mûno ndûgîrîrwo ndûgîrîrwo na mûtî", meaning: "A person is supported by others, just as a tree is supported by the forest." },
+  { proverb: "Gûtirî mûtî ûtarî mûthî", meaning: "There is no tree without roots (Everyone has an origin)." },
+  { proverb: "Mûndû mûgîkûyû ndarîa na mûno", meaning: "A Kikuyu person does not eat alone (Community is important)." },
+  { proverb: "Wîhîrîrîa ndîrîa", meaning: "He who perseveres eats (Patience pays off)." },
+];
+
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [streak, setStreak] = useState(0);
+  const [proverbIdx, setProverbIdx] = useState(0);
+  const [mood, setMood] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    // Fetch streak from Supabase
+    supabase.from("streaks").select("count").eq("user_id", user.id).single().then(({ data }) => {
+      setStreak(data?.count || 0);
+      setLoading(false);
+    });
+  }, [user]);
+
+  const handleCheckin = async (drank: boolean, mood: string) => {
+    if (!user) return;
+    await supabase.from("checkins").insert({ user_id: user.id, drank, mood, date: new Date().toISOString() });
+    if (!drank) setStreak((s) => s + 1);
+    else setStreak(0);
+    // Optionally update streak in Supabase
+    await supabase.from("streaks").upsert({ user_id: user.id, count: !drank ? streak + 1 : 0 });
   };
 
-  const getWelcomeMessage = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'Manage users, content, and system settings from your admin dashboard.';
-      case 'counselor':
-        return 'Access counseling tools and support resources for your clients.';
-      default:
-        return 'Begin your journey with culturally grounded rehabilitation support.';
+  const handleMood = async (emoji: string) => {
+    setMood(emoji);
+    if (user) {
+      await supabase.from("moods").insert({ user_id: user.id, mood: emoji, date: new Date().toISOString() });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-secondary/20">
-      <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-primary">Murata Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Welcome back, {profile?.full_name || user?.email}</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-purple-50 flex flex-col">
+      <Header title="Murata Dashboard" />
+      <main className="max-w-screen-lg mx-auto py-8 px-4 w-full flex-1">
+        <StreakTracker streak={streak} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          {/* Daily Check-in Card */}
+          <div className="murata-card rounded-xl shadow bg-white/90 p-6 flex flex-col items-center">
+            <h3 className="text-xl font-semibold mb-2 text-primary">Daily Check-in</h3>
+            <div className="mb-2">Did you drink today?</div>
+            <div className="flex gap-4 mb-2">
+              <button className="murata-back px-6 py-2" onClick={() => handleCheckin(true, mood)}>Yes</button>
+              <button className="murata-back px-6 py-2" onClick={() => handleCheckin(false, mood)}>No</button>
+            </div>
+            <div className="mb-2">How are you feeling today?</div>
+            <MoodSelector selected={mood} onSelect={handleMood} />
           </div>
-          <div className="flex items-center gap-4">
-            {profile && (
-              <Badge variant={getRoleBadgeVariant(profile.role)} className="capitalize">
-                {profile.role}
-              </Badge>
-            )}
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
+
+          {/* ProverbCard */}
+          <div className="murata-card rounded-xl shadow bg-white/90 p-6 flex flex-col items-center">
+            <ProverbCard proverb={mockProverbs[proverbIdx]} onNext={() => setProverbIdx((i) => (i + 1) % mockProverbs.length)} />
           </div>
-        </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="col-span-full">
-            <CardHeader>
-              <CardTitle>Welcome to Murata</CardTitle>
-              <CardDescription>
-                {profile && getWelcomeMessage(profile.role)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-secondary/50 p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-2">Today's Proverb</p>
-                  <p className="text-foreground italic">
-                    "Mũndũ ũtarĩ ngwatanĩro ndangĩrũgamĩra andũ"
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    (A person without unity cannot lead people)
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Mini Game Card */}
+          <div className="murata-card rounded-xl shadow bg-white/90 p-6 flex flex-col items-center">
+            <h3 className="text-xl font-semibold mb-2 text-primary">Proverb Quiz</h3>
+            <div className="text-gray-700 mb-2 text-center">Test your knowledge of Kikuyu proverbs! Guess the meaning and earn a streak.</div>
+            <button className="murata-back w-full mt-2 text-lg py-3 transition transform hover:scale-105 hover:bg-purple-600 hover:text-white shadow-md" onClick={() => navigate("/game")}>Play Now</button>
+          </div>
 
-          {profile?.role === 'admin' && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Management</CardTitle>
-                  <CardDescription>Manage system users and roles</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" disabled>
-                    Manage Users
-                    <span className="text-xs ml-2">(Coming Soon)</span>
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Content Management</CardTitle>
-                  <CardDescription>Manage proverbs and stories</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" disabled>
-                    Manage Content
-                    <span className="text-xs ml-2">(Coming Soon)</span>
-                  </Button>
-                </CardContent>
-              </Card>
-            </>
-          )}
-
-          {profile?.role === 'counselor' && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Client Sessions</CardTitle>
-                  <CardDescription>View and manage client sessions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" disabled>
-                    View Sessions
-                    <span className="text-xs ml-2">(Coming Soon)</span>
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resources</CardTitle>
-                  <CardDescription>Access counseling resources</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" disabled>
-                    View Resources
-                    <span className="text-xs ml-2">(Coming Soon)</span>
-                  </Button>
-                </CardContent>
-              </Card>
-            </>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Chat with Murata</CardTitle>
-              <CardDescription>Start a conversation with your AI counselor</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" disabled>
-                Start Chat
-                <span className="text-xs ml-2">(Coming Soon)</span>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Progress Tracking</CardTitle>
-              <CardDescription>View your rehabilitation progress</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" disabled>
-                View Progress
-                <span className="text-xs ml-2">(Coming Soon)</span>
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Chat Card */}
+          <div className="murata-card rounded-xl shadow bg-white/90 p-6 flex flex-col items-center">
+            <h3 className="text-xl font-semibold mb-2 text-primary">Chat</h3>
+            <div className="text-gray-700 mb-2 text-center">Start a conversation with your AI counselor</div>
+            <button className="murata-back w-full mt-2 text-lg py-3" onClick={() => navigate("/chat")}>Start Chat</button>
+          </div>
         </div>
       </main>
+      <footer className="w-full flex justify-center items-center py-4 bg-white/80 shadow-inner mt-4">
+        <nav className="flex gap-8 text-primary font-medium">
+          <button onClick={() => navigate("/checkins")} className="hover:text-purple-900">Check-in History</button>
+          <button onClick={() => navigate("/support")} className="hover:text-purple-900">Support</button>
+          <button onClick={() => navigate("/profile")} className="hover:text-purple-900">Profile</button>
+        </nav>
+      </footer>
     </div>
   );
 };
+
+export default Dashboard;

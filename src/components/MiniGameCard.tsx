@@ -10,7 +10,12 @@ const MiniGameCard = () => {
       <div className="text-gray-700 mb-2 text-center">
         Test your knowledge of Kikuyu proverbs! Guess the meaning and earn a streak.
       </div>
-      <GradientButton className="w-full mt-2" onClick={() => navigate("/proverb-quiz")}>Play Now</GradientButton>
+      <button
+        className="murata-back w-full mt-2 text-lg py-3 transition transform hover:scale-105 hover:bg-purple-600 hover:text-white shadow-md"
+        onClick={() => navigate("/game")}
+      >
+        Play Now
+      </button>
     </div>
   );
 };

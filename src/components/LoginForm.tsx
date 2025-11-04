@@ -21,7 +21,7 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { signIn } = useAuth();
+  const { signIn, profile } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +35,24 @@ export const LoginForm = () => {
       if (error) {
         setErrors({ submit: error.message });
       } else {
-        navigate("/landing", { replace: true });
+        // Poll for profile to be loaded
+        let tries = 0;
+        const checkProfile = () => {
+          tries++;
+          if (profile?.role) {
+            if (profile.role === "admin") {
+              navigate("/admin", { replace: true });
+            } else {
+              navigate("/dashboard", { replace: true });
+            }
+          } else if (tries < 20) {
+            setTimeout(checkProfile, 100);
+          } else {
+            // Fallback if profile not loaded
+            navigate("/dashboard", { replace: true });
+          }
+        };
+        checkProfile();
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
