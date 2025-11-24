@@ -1,4 +1,4 @@
-**📦 1. Prerequisites**
+# **📦 1. Prerequisites**
 
 Ensure the following are installed:
 
@@ -10,25 +10,25 @@ Supabase CLI
 
 Git
 
-**🧩 2. Clone Project**
+# **🧩 2. Clone Project**
 git clone https://github.com/<your-username>/murata-nyeri-support.git
 cd murata-nyeri-support
 
-**⚙️ 3. Translator Service (FastAPI, Port 8002)**
+# **⚙️ 3. Translator Service (FastAPI, Port 8002)**
 Open a terminal and run:
 cd translator
 
-# Create and activate virtual environment (Windows)
+Create and activate virtual environment (Windows)
 python -m venv .venv
 .\.venv\Scripts\activate
 
-# Mac/Linux
-# python3 -m venv .venv
-# source .venv/bin/activate
+Mac/Linux
+python3 -m venv .venv
+source .venv/bin/activate
 
 pip install -r requirements.txt
 
-# Run translator API
+Run translator API
 uvicorn app:app --host 0.0.0.0 --port 8002 --reload
 
 
@@ -36,7 +36,7 @@ This starts the translation microservice on:
 
 http://localhost:8002
 
-**🟪 4. Supabase Edge Functions**
+# **🟪 4. Supabase Edge Functions**
 
 Open a new terminal:
 
@@ -54,7 +54,7 @@ supabase functions serve retrieve --env-file .env.local --no-verify-jwt
 
 Make sure .env.local contains your Supabase project keys.
 
-**🎨 5. Frontend (Vite Client)**
+# **🎨 5. Frontend (Vite Client)**
 
 Open another terminal:
 
@@ -73,7 +73,7 @@ Required environment variables in murata-nyeri-support/.env:
 VITE_SUPABASE_URL=your_url
 VITE_SUPABASE_ANON_KEY=your_key
 
-**⚡ 6. One-liner PowerShell Script (starts all services)**
+# **⚡ 6. One-liner PowerShell Script (starts all services)**
 
 Place this in a .ps1 file or run directly:
 
